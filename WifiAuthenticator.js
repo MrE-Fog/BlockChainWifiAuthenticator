@@ -10,13 +10,15 @@ contract WifiAuthenticator {
     struct user {
         address username;
         string key;
+        uint8 failedTries;
+        uint8 successTries;
     }
     
     //mapping from users to addresses
     mapping(address => user) users;
     uint8 numberOfUsers;
     uint8 currentUsers;
-    
+
     //wifi user authenticastor
      function WifiAuthenticator(string mesage,uint8 _numusers) public {
         networkname = mesage;
@@ -40,12 +42,24 @@ contract WifiAuthenticator {
         if (currentUsers > numberOfUsers) return;
         users[_newuser].username = _newuser;
         users[_newuser].key = "admin123";
+        users[_newuser].failedTries = 0;
+        users[_newuser].successTries = 0;
         currentUsers = currentUsers+1;
     }
      
      //get user credentials in case the user has forgot the credentials
      function getUserCredentials(address _usercredentials) public view returns (string) {
          return users[_usercredentials].key;
+     }
+     
+     //get user credentials in case the user has forgot the credentials
+     function getFailedTries(address _usercredentials) public view returns (uint8) {
+         return users[_usercredentials].successTries;
+     }
+     
+     //get user credentials in case the user has forgot the credentials
+     function getSuccessTries(address _usercredentials) public view returns (uint8) {
+         return users[_usercredentials].failedTries;
      }
      
      //helper function for comparing string with each other
@@ -56,8 +70,12 @@ contract WifiAuthenticator {
      //helper function for validating the user
      function ValidateUser(address _usercredentials,string _key) public view returns (string) {
          if (compareStrings( users[_usercredentials].key, _key) ) {
-             return  "Successfully logged in ";
+            
+             users[_usercredentials].successTries = users[_usercredentials].successTries  + 1;
+              return  "Successfully logged in ";
          }else{
+             
+             users[_usercredentials].failedTries = users[_usercredentials].failedTries  + 1;
              return "Either user name or password is wrong";
          }
          
